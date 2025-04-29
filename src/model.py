@@ -8,6 +8,8 @@ from typing import List
 from common_ml.model import VideoModel
 from common_ml.tag_formatting import VideoTag
 
+from config import config
+
 class HungarianSTT(VideoModel):
     def __init__(self):
         """
@@ -16,7 +18,7 @@ class HungarianSTT(VideoModel):
         self.model = Wav2Vec2ForCTC.from_pretrained("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian")
         self.model.eval()
         """
-        self.model = SpeechRecognitionModel("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian")
+        self.model = SpeechRecognitionModel("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian", device=config["device"])
         
     def tag(self, fpath: str) -> List[VideoTag]:
 

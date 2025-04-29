@@ -1,2 +1,4 @@
 runtime:
   default: {}
+
+device: cuda

@@ -1,9 +1,8 @@
-#from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
-#import torch
-#import torchaudio
-from huggingsound import SpeechRecognitionModel
-
+import requests
 from typing import List
+
+import ollama
+from huggingsound import SpeechRecognitionModel
 
 from common_ml.model import VideoModel
 from common_ml.tag_formatting import VideoTag
@@ -19,13 +18,29 @@ class HungarianSTT(VideoModel):
         self.model.eval()
         """
         self.model = SpeechRecognitionModel("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian", device=config["device"])
+        self.translator = ollama.Client(config["llama"])
         
     def tag(self, fpath: str) -> List[VideoTag]:
 
         transcription = self.model.transcribe([fpath])[0]
 
         # Get words
-        words = transcription['transcription'].split()
+        words = transcription['transcription']
+
+        prompt = f"Translate the following Hungarian text to English, considering it's from a soccer game context:\n\n\"{words}\""
+
+        response = self.translator.generate(
+                model="llama:70b",
+                stream=False,
+                prompt=prompt,
+                options={'seed': 1, "temperature": 0.0})
+
+        print(response)
+
+        return []
+
+        # Use ollama to translate to English
+        # words = self.translate_to_english(words)
 
         audio_duration = transcription['end_timestamps'][-1]
 
@@ -49,3 +64,4 @@ class HungarianSTT(VideoModel):
             ))
 
         return tags
+    

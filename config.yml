@@ -2,3 +2,5 @@ runtime:
   default: {}
 
 device: cuda
+
+llama: http://localhost:11434

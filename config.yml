@@ -1,6 +1,8 @@
 runtime:
-  default: {}
+  default: 
+    model: llama3.3:70b
+    prompt: Translate the following Hungarian text to English, considering it's from a soccer game context. If it is total gibbersish don't output anything.
 
-device: cuda
+device: cpu
 
 llama: http://localhost:11434

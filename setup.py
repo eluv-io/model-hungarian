@@ -6,6 +6,8 @@ setup(
     packages=['src'],
     install_requires=[
         'huggingsound',
+        'ollama',
+        'loguru',
         'common_ml @ git+ssh://git@github.com/qluvio/common-ml.git#egg=common_ml',
     ]
 )

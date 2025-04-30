@@ -1,8 +1,9 @@
-import requests
 from typing import List
+import json
 
 import ollama
 from huggingsound import SpeechRecognitionModel
+from loguru import logger
 
 from common_ml.model import VideoModel
 from common_ml.tag_formatting import VideoTag
@@ -10,15 +11,11 @@ from common_ml.tag_formatting import VideoTag
 from config import config
 
 class HungarianSTT(VideoModel):
-    def __init__(self):
-        """
-        # Load model and processor
-        self.processor = Wav2Vec2Processor.from_pretrained("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian")
-        self.model = Wav2Vec2ForCTC.from_pretrained("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian")
-        self.model.eval()
-        """
+    def __init__(self, llama_model: str, prompt: str):
         self.model = SpeechRecognitionModel("jonatasgrosman/wav2vec2-large-xlsr-53-hungarian", device=config["device"])
         self.translator = ollama.Client(config["llama"])
+        self.llama_model = llama_model
+        self.prompt = prompt
         
     def tag(self, fpath: str) -> List[VideoTag]:
 
@@ -27,20 +24,25 @@ class HungarianSTT(VideoModel):
         # Get words
         words = transcription['transcription']
 
-        prompt = f"Translate the following Hungarian text to English, considering it's from a soccer game context:\n\n\"{words}\""
-
+        prompt = f"{self.prompt}\n" + words + "\nOutput your response in the following format: {\"translation\": translated_text}. Do not output anything else."
+        
         response = self.translator.generate(
-                model="llama:70b",
+                model=self.llama_model,
                 stream=False,
                 prompt=prompt,
-                options={'seed': 1, "temperature": 0.0})
+                options={'seed': 1, "temperature": 0.0})["response"]
 
-        print(response)
-
-        return []
-
-        # Use ollama to translate to English
-        # words = self.translate_to_english(words)
+        try:
+            response = response[response.index("{"):response.index("}") + 1]
+            response = json.loads(response)
+            words = response['translation']
+        except Exception as e:
+            logger.error(f"Error parsing translation response: {e}")
+            return []
+        
+        if not words:
+            logger.debug("No words found in transcription.")
+            return []
 
         audio_duration = transcription['end_timestamps'][-1]
 

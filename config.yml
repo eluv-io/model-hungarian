@@ -5,4 +5,4 @@ runtime:
 
 device: cpu
 
-llama: http://localhost:11434
+llama: http://ml-004.eluvio:11434

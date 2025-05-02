@@ -43,6 +43,8 @@ class HungarianSTT(VideoModel):
         if not words:
             logger.debug("No words found in transcription.")
             return []
+        
+        words = words.split(' ')
 
         audio_duration = transcription['end_timestamps'][-1]
 
